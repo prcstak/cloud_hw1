@@ -1,0 +1,266 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v7.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v7.0": {
+      "photo_trigger/1.0.0": {
+        "dependencies": {
+          "AWSSDK.Core": "3.7.300.6",
+          "AWSSDK.S3": "3.7.300.4",
+          "AWSSDK.SQS": "3.7.300.6",
+          "Newtonsoft.Json": "13.0.3",
+          "YaCloudKit.MQ": "0.8.0",
+          "Yandex.Cloud.SDK": "1.2.0"
+        },
+        "runtime": {
+          "photo_trigger.dll": {}
+        }
+      },
+      "AWSSDK.Core/3.7.300.6": {
+        "runtime": {
+          "lib/netcoreapp3.1/AWSSDK.Core.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.7.300.6"
+          }
+        }
+      },
+      "AWSSDK.S3/3.7.300.4": {
+        "dependencies": {
+          "AWSSDK.Core": "3.7.300.6"
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/AWSSDK.S3.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.7.300.4"
+          }
+        }
+      },
+      "AWSSDK.SQS/3.7.300.6": {
+        "dependencies": {
+          "AWSSDK.Core": "3.7.300.6"
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/AWSSDK.SQS.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.7.300.6"
+          }
+        }
+      },
+      "Google.Protobuf/3.19.1": {
+        "runtime": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "assemblyVersion": "3.19.1.0",
+            "fileVersion": "3.19.1.0"
+          }
+        }
+      },
+      "Grpc/2.41.1": {
+        "dependencies": {
+          "Grpc.Core": "2.41.1"
+        }
+      },
+      "Grpc.Core/2.41.1": {
+        "dependencies": {
+          "Grpc.Core.Api": "2.41.1",
+          "System.Memory": "4.5.3"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Grpc.Core.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.41.1.0"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/linux-arm64/native/libgrpc_csharp_ext.arm64.so": {
+            "rid": "linux-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x64/native/libgrpc_csharp_ext.x64.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx-x64/native/libgrpc_csharp_ext.x64.dylib": {
+            "rid": "osx-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/grpc_csharp_ext.x64.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/grpc_csharp_ext.x86.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Grpc.Core.Api/2.41.1": {
+        "dependencies": {
+          "System.Memory": "4.5.3"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Grpc.Core.Api.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.41.1.0"
+          }
+        }
+      },
+      "Microsoft.CSharp/4.7.0": {},
+      "Newtonsoft.Json/13.0.3": {
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.3.27908"
+          }
+        }
+      },
+      "System.Memory/4.5.3": {},
+      "System.Text.Json/4.7.2": {},
+      "YaCloudKit.MQ/0.8.0": {
+        "runtime": {
+          "lib/net6.0/YaCloudKit.MQ.dll": {
+            "assemblyVersion": "0.8.0.0",
+            "fileVersion": "0.8.0.0"
+          }
+        }
+      },
+      "Yandex.Cloud.Protos/1.2.0": {
+        "dependencies": {
+          "Google.Protobuf": "3.19.1",
+          "Grpc": "2.41.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Yandex.Cloud.Protos.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Yandex.Cloud.SDK/1.2.0": {
+        "dependencies": {
+          "Microsoft.CSharp": "4.7.0",
+          "System.Text.Json": "4.7.2",
+          "Yandex.Cloud.Protos": "1.2.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Yandex.Cloud.SDK.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "photo_trigger/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AWSSDK.Core/3.7.300.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-i/Z1MrzE4hMgbmBthh2KavwcEqSYaFpYFc2WBfzF/SCLWciaw5Pj7RtyF3/d1QbRhN2Rb3n0vIzI3ZQS96Hz4A==",
+      "path": "awssdk.core/3.7.300.6",
+      "hashPath": "awssdk.core.3.7.300.6.nupkg.sha512"
+    },
+    "AWSSDK.S3/3.7.300.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ik34lfIvxlIubOuKrLHMqFdr2aRG8vk6rKY14Kov3Dh4QH1lRdXXLIOEn/sjTsxhiVTU9q1HiaSB/vnJfJ4s6w==",
+      "path": "awssdk.s3/3.7.300.4",
+      "hashPath": "awssdk.s3.3.7.300.4.nupkg.sha512"
+    },
+    "AWSSDK.SQS/3.7.300.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zi78n9B5jvEUNc7TKnALsyCrSGtkdMS93GzTeggyuuTF7fqepumj4LeKlfkSir9maYa3KKb1d6qMXSJYdSWXtw==",
+      "path": "awssdk.sqs/3.7.300.6",
+      "hashPath": "awssdk.sqs.3.7.300.6.nupkg.sha512"
+    },
+    "Google.Protobuf/3.19.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-M6yun2BPdHkBjD3V14muZSt72azWHRJEx88ME2TyyH2+/ww6R3hIptjBFQQtO6pmkfLXW/NGQ4hADWSa9AmK2A==",
+      "path": "google.protobuf/3.19.1",
+      "hashPath": "google.protobuf.3.19.1.nupkg.sha512"
+    },
+    "Grpc/2.41.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-kRUkybQ/3G1m+H1nZcNMJ/FQ63S5u/Mo9HRzJG4iPjSt4WWU4F2MZpD2lRu6FSNKDFXas/QQPHRNfEsBmzm4dA==",
+      "path": "grpc/2.41.1",
+      "hashPath": "grpc.2.41.1.nupkg.sha512"
+    },
+    "Grpc.Core/2.41.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Zjr17VM0jbIsdDNcKb2K5N9y/pvxIkQBD0wkq7IS0df39AW7LBD9Uj1kVtlfZQblEa0iyhX2Bn3YNCGiwxtmWg==",
+      "path": "grpc.core/2.41.1",
+      "hashPath": "grpc.core.2.41.1.nupkg.sha512"
+    },
+    "Grpc.Core.Api/2.41.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-va82wvX7xkurFu56vqXhpdtvzEtuaLipRJ4PkS162JbzeZ4O9mwX0sSroglGTXiMsUiZtgYlSgfW6/JkjE1PCg==",
+      "path": "grpc.core.api/2.41.1",
+      "hashPath": "grpc.core.api.2.41.1.nupkg.sha512"
+    },
+    "Microsoft.CSharp/4.7.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pTj+D3uJWyN3My70i2Hqo+OXixq3Os2D1nJ2x92FFo6sk8fYS1m1WLNTs0Dc1uPaViH0YvEEwvzddQ7y4rhXmA==",
+      "path": "microsoft.csharp/4.7.0",
+      "hashPath": "microsoft.csharp.4.7.0.nupkg.sha512"
+    },
+    "Newtonsoft.Json/13.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
+      "path": "newtonsoft.json/13.0.3",
+      "hashPath": "newtonsoft.json.13.0.3.nupkg.sha512"
+    },
+    "System.Memory/4.5.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3oDzvc/zzetpTKWMShs1AADwZjQ/36HnsufHRPcOjyRAAMLDlu2iD33MBI2opxnezcVUtXyqDXXjoFMOU9c7SA==",
+      "path": "system.memory/4.5.3",
+      "hashPath": "system.memory.4.5.3.nupkg.sha512"
+    },
+    "System.Text.Json/4.7.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-TcMd95wcrubm9nHvJEQs70rC0H/8omiSGGpU4FQ/ZA1URIqD4pjmFJh2Mfv1yH1eHgJDWTi2hMDXwTET+zOOyg==",
+      "path": "system.text.json/4.7.2",
+      "hashPath": "system.text.json.4.7.2.nupkg.sha512"
+    },
+    "YaCloudKit.MQ/0.8.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-BbINrFawexZlcuMLJvpbUoh2SZTk2aDLs8Q9Gb8nz/6Aq0kPoNi+1j4RLec/NkaeQ4IvrezMYmDUOsHi0Z6neQ==",
+      "path": "yacloudkit.mq/0.8.0",
+      "hashPath": "yacloudkit.mq.0.8.0.nupkg.sha512"
+    },
+    "Yandex.Cloud.Protos/1.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-LNeotKKhKMYuBsOJTIGUcFpVGkGlZ7h18DdsjF2AvCCf6LhNP6t8wO2o8nWf5EcFv8jF+XxvxLtH0IpZXiLWZQ==",
+      "path": "yandex.cloud.protos/1.2.0",
+      "hashPath": "yandex.cloud.protos.1.2.0.nupkg.sha512"
+    },
+    "Yandex.Cloud.SDK/1.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nLywlIe4nGt5Kj9e9I5u7ZKoSmBbumuimrANZiV5UU8WZN0+6N5GhOCp4nSyvnzk+3Ldz8zM2rQ1WgC70zV5UA==",
+      "path": "yandex.cloud.sdk/1.2.0",
+      "hashPath": "yandex.cloud.sdk.1.2.0.nupkg.sha512"
+    }
+  }
+}

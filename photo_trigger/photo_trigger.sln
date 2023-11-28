@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "photo_trigger", "photo_trigger\photo_trigger.csproj", "{AFF0B12E-F95E-4F7C-82F5-1C78388386A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{CAAA0FDF-BC21-4A97-9E0F-279481EB7A42}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AFF0B12E-F95E-4F7C-82F5-1C78388386A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFF0B12E-F95E-4F7C-82F5-1C78388386A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFF0B12E-F95E-4F7C-82F5-1C78388386A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFF0B12E-F95E-4F7C-82F5-1C78388386A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAAA0FDF-BC21-4A97-9E0F-279481EB7A42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAAA0FDF-BC21-4A97-9E0F-279481EB7A42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAAA0FDF-BC21-4A97-9E0F-279481EB7A42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAAA0FDF-BC21-4A97-9E0F-279481EB7A42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
