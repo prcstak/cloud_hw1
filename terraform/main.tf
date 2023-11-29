@@ -7,26 +7,22 @@ terraform {
   required_version = ">= 0.13"
 }
 
-locals {
-  folder_id = "b1g8rqr6hk041qarcuvq"
-}
-
 // Подключение провайдера
 provider "yandex" {
-  token     = "y0_AgAAAABwYfFqAATuwQAAAADubwuME5d0zbOnQ3CxT3pw6Hc7feKYU3I"
-  cloud_id  = "b1g71e95h51okii30p25"
-  folder_id = local.folder_id
+  token     = var.oauth_token
+  cloud_id  = var.cloud_id
+  folder_id = var.folder_id
 }
 
 resource "yandex_iam_service_account" "sa" {
-  folder_id = local.folder_id
-  name      = "test"
+  folder_id = var.folder_id
+  name      = "vvot09-sa"
 }
 
 
 // Назначение роли сервисному аккаунту
 resource "yandex_resourcemanager_folder_iam_member" "sa-editor" {
-  folder_id = local.folder_id
+  folder_id = var.folder_id
   role      = "admin"
   member    = "serviceAccount:${yandex_iam_service_account.sa.id}"
 }
@@ -68,17 +64,19 @@ resource "yandex_message_queue" "vvot09-task" {
   name       = "vvot09-task"
 }
 
+// Создание базы данных для имен 
 resource "yandex_ydb_database_serverless" "vvot09-db-photo-face" {
   name      = "vvot09-db-photo-face"
-  folder_id = local.folder_id
+  folder_id = var.folder_id
 
-  deletion_protection = true
+  deletion_protection = false
 
   serverless_database {
     storage_size_limit = 5
   }
 }
 
+// Создание таблицы в базе данных
 resource "yandex_ydb_table" "test_table" {
   path              = "faces_table"
   connection_string = yandex_ydb_database_serverless.vvot09-db-photo-face.ydb_full_endpoint
@@ -103,6 +101,7 @@ resource "yandex_ydb_table" "test_table" {
 
 }
 
+// Создание функции определения лиц
 resource "yandex_function" "vvot09-face-detection" {
   name              = "vvot09-face-detection"
   memory            = "128"
@@ -116,9 +115,12 @@ resource "yandex_function" "vvot09-face-detection" {
   environment = {
     "accessKey" = yandex_iam_service_account_static_access_key.sa-static-key.access_key
     "secretKey" = yandex_iam_service_account_static_access_key.sa-static-key.secret_key
+    "oauth"     = var.oauth_token
+    "folderId"  = var.folder_id
   }
 }
 
+// Создание триггера на вызов функции определения лиц
 resource "yandex_function_trigger" "vvot09-photo" {
   name   = "vvot09-photo"
   labels = {}
@@ -139,6 +141,7 @@ resource "yandex_function_trigger" "vvot09-photo" {
   }
 }
 
+// Создание функции на создании фотографий лиц
 resource "yandex_function" "vvot09-face-cut" {
   name               = "vvot09-face-cut"
   memory             = "128"
@@ -158,6 +161,7 @@ resource "yandex_function" "vvot09-face-cut" {
   }
 }
 
+// Создание триггера на обработку очереди и вызова функции создания лиц
 resource "yandex_function_trigger" "vvot09-task" {
   name   = "vvot09-task"
   labels = {}
@@ -175,10 +179,12 @@ resource "yandex_function_trigger" "vvot09-task" {
   }
 }
 
+// Создание шлюза
 resource "yandex_api_gateway" "vvot09-apigw" {
   name        = "vvot09-apigw"
   description = "api-gateway-for-images"
   labels      = {}
+  // Не получается назначить доменное имя ( lets encrypt не выдает сертификат )
   # custom_domains {
   #   fqdn           = "vvot09-apigw.ru"
   #   certificate_id = yandex_cm_certificate.cert.id
@@ -204,10 +210,25 @@ resource "yandex_api_gateway" "vvot09-apigw" {
             bucket: vvot09-faces
             object: '{face}'
             service_account_id: ${yandex_iam_service_account.sa.id}
+      /{photo}:
+        get:
+          summary: Serve photo image from Yandex Cloud Object Storage
+          parameters:
+            - name: photo
+              in: path
+              required: true
+              schema:
+                type: string
+          x-yc-apigateway-integration:
+            type: object_storage
+            bucket: vvot09-photo
+            object: '{photo}'
+            service_account_id: ${yandex_iam_service_account.sa.id}
 
   EOT
 }
 
+// Создание функции для телеграм бота
 resource "yandex_function" "vvot09-boot" {
   name               = "vvot09-boot"
   memory             = "128"
@@ -226,9 +247,11 @@ resource "yandex_function" "vvot09-boot" {
     "connectionString" = yandex_ydb_database_serverless.vvot09-db-photo-face.ydb_api_endpoint
     "database"         = yandex_ydb_database_serverless.vvot09-db-photo-face.database_path
     "gatewayId"        = yandex_api_gateway.vvot09-apigw.id
+    "botToken"         = var.botToken
   }
 }
 
+// Сделать функцию тг бота публичной
 resource "yandex_function_iam_binding" "boot-iam" {
   function_id = yandex_function.vvot09-boot.id
   role        = "serverless.functions.invoker"
@@ -237,15 +260,17 @@ resource "yandex_function_iam_binding" "boot-iam" {
   ]
 }
 
-resource "yandex_cm_certificate" "cert" {
-  name    = "cert"
-  domains = ["vvot09-apigw.ru"]
+// lets encrypt не выдает сертификат =(
+# resource "yandex_cm_certificate" "cert" {
+#   name    = "cert"
+#   domains = ["vvot09-apigw.ru"]
 
-  managed {
-    challenge_type = "DNS_CNAME"
-  }
-}
+#   managed {
+#     challenge_type = "DNS_CNAME"
+#   }
+# }
 
+// Назначить обработчик телеграм боту в виде функции телеграм бота
 data "http" "webhook" {
-  url = "https://api.telegram.org/bot6911449123:AAFoIYdoptbkzU1vXFApetQKkhMHCLp0HrA/setWebhook?url=https://functions.yandexcloud.net/${yandex_function.vvot09-boot.id}"
+  url = "https://api.telegram.org/bot${var.botToken}/setWebhook?url=https://functions.yandexcloud.net/${yandex_function.vvot09-boot.id}"
 }

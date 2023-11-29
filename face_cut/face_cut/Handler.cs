@@ -45,9 +45,6 @@ public class Vertex
 
 public class Handler
 {
-    private readonly Sdk _sdk =
-        new(new OAuthCredentialsProvider("y0_AgAAAABwYfFqAATuwQAAAADubwuME5d0zbOnQ3CxT3pw6Hc7feKYU3I"));
-
     public async Task FunctionHandler(string message)
     {
         var accessKey = Environment.GetEnvironmentVariable("accessKey");
@@ -61,7 +58,7 @@ public class Handler
 
         var task = JsonConvert.DeserializeObject<Root>(jsonTask)!;
 
-        var key = Guid.NewGuid().ToString();
+        var key = Guid.NewGuid() + ".jpg";
 
 
         AmazonS3Client s3Client = new AmazonS3Client(
@@ -110,12 +107,11 @@ public class Handler
         
         var metadataProvider = new MetadataProvider();
 
-// Await initial IAM token.
         await metadataProvider.Initialize();
         
         var config = new DriverConfig(
-            endpoint: connectionString!, // Database endpoint, "grpcs://host:port"
-            database: database!, // Full database path
+            endpoint: connectionString!, 
+            database: database!, 
             credentials: metadataProvider
         );
 

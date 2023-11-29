@@ -1,14 +1,10 @@
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
-using Yandex.Cloud;
-using Yandex.Cloud.Credentials;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Telegram.Bot;
-using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 using Yandex.Cloud.Functions;
 using Ydb.Sdk;
 using Ydb.Sdk.Services.Table;
@@ -17,15 +13,18 @@ using Ydb.Sdk.Yc;
 
 namespace Function;
 
-public class Message {
+public class Message
+{
     public string body { get; set; }
 }
 
-public class Response {
+public class Response
+{
     public int statusCode { get; set; }
     public String body { get; set; }
 
-    public Response(int statusCode, String body) {
+    public Response(int statusCode, String body)
+    {
         this.statusCode = statusCode;
         this.body = body;
     }
@@ -33,112 +32,164 @@ public class Response {
 
 public class Handler
 {
+    private TableClient _tableClient;
+    private string? _gatewayId;
+    private AmazonS3Client _s3Client;
+    private DriverConfig _driverConfig;
+
     public async Task<Response> FunctionHandler(string message, Context context)
     {
+        await InitHandler();
+
         var tgevent = JsonConvert.DeserializeObject<Message>(message).body;
         var update = JsonConvert.DeserializeObject<Update>(tgevent);
-        
-        var tgClient = new TelegramBotClient("6911449123:AAFoIYdoptbkzU1vXFApetQKkhMHCLp0HrA");
+
+        var tgClient = new TelegramBotClient(Environment.GetEnvironmentVariable("botToken"));
 
         await UpdateHandler(tgClient, update);
 
         return new Response(200, "OK");
     }
 
+    private async Task InitHandler()
+    {
+        var accessKey = Environment.GetEnvironmentVariable("accessKey");
+        var secretKey = Environment.GetEnvironmentVariable("secretKey");
+        _gatewayId = Environment.GetEnvironmentVariable("gatewayId");
+
+        _s3Client = new AmazonS3Client(
+            new BasicAWSCredentials(accessKey, secretKey),
+            new AmazonS3Config { ServiceURL = "https://s3.yandexcloud.net" });
+        
+        var metadataProvider = new MetadataProvider();
+
+        var connectionString = Environment.GetEnvironmentVariable("connectionString");
+        var database = Environment.GetEnvironmentVariable("database");
+
+        await metadataProvider.Initialize();
+
+        _driverConfig = new DriverConfig(
+            endpoint: connectionString!, 
+            database: database!, 
+            credentials: metadataProvider
+        );
+    }
+
     private async Task UpdateHandler(ITelegramBotClient botClient, Update update)
     {
         try
         {
-            switch (update.Type)
+            var message = update.Message;
+            var chat = message?.Chat;
+
+            if (message?.Text == null) return;
+
+            if (message.Text == "/getface")
             {
-                case UpdateType.Message:
-                {
-                    var message = update.Message;
-                    var chat = message?.Chat;
-
-                    switch (message.Type)
-                    {
-                        case MessageType.Text:
-                        {
-                            if (message.Text == "/getface")
-                            {
-                                var faceId = await GetRandomFaceId();
-                                await SendPhoto(botClient, chat.Id, faceId);
-                            }
-                            else
-                            {
-                                if (message.ReplyToMessage?.Caption != null)
-                                {
-                                    var faceId = message.ReplyToMessage.Caption;
-                                    await SetFaceName(faceId, message.Text);
-                                }
-                            }
-                            break;
-                        }
-                    }
-
-                    break;
-                }
+                var faceId = await GetRandomFaceId();
+                await SendPhotoFromObjectStorage(botClient, chat.Id, faceId, "vvot09-faces");
+                return;
             }
+
+            var entries = message.Text.Split(" ");
+
+            if (entries[0] == "/find")
+            {
+                var name = entries[1];
+
+                var images = await FindPhotoByFaceName(name);
+
+                if (images.IsNullOrEmpty())
+                {
+                    await botClient.SendTextMessageAsync(chat.Id,
+                        $"Фотографии с {name} не найдены");
+                    return;
+                }
+
+                foreach (var image in images)
+                {
+                    await SendPhotoFromObjectStorage(botClient, chat.Id, image, "vvot09-photo");
+                }
+
+                return;
+            }
+
+            if (message.ReplyToMessage?.Caption != null)
+            {
+                var faceId = message.ReplyToMessage.Caption;
+                await SetFaceName(faceId, message.Text);
+                return;
+            }
+
+            await botClient.SendTextMessageAsync(chat.Id, "Ошибка");
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            throw;
         }
     }
 
-    private async Task SendPhoto(ITelegramBotClient client, long chatId, string faceKey)
+    private async Task SendPhotoFromObjectStorage(ITelegramBotClient client, long chatId, string objectKey,
+        string bucket)
     {
-        var accessKey = Environment.GetEnvironmentVariable("accessKey");
-        var secretKey = Environment.GetEnvironmentVariable("secretKey");
-        
-        AmazonS3Client s3Client = new AmazonS3Client(
-            new BasicAWSCredentials(accessKey, secretKey),
-            new AmazonS3Config { ServiceURL = "https://s3.yandexcloud.net" });
-
-        var imageResponse = await s3Client.GetObjectAsync(
+        var imageResponse = await _s3Client.GetObjectAsync(
             new GetObjectRequest
             {
-                BucketName = "vvot09-faces",
-                Key = faceKey
+                BucketName = bucket,
+                Key = objectKey
             });
         await using (Stream responseStream = imageResponse.ResponseStream)
         {
-            var gatewayId = Environment.GetEnvironmentVariable("gatewayId");
-            var url = $"https://{gatewayId}.apigw.yandexcloud.net/?face={faceKey}";
-            Console.WriteLine(url);
+            var url = GetObjectUrl(objectKey, bucket);
             await client.SendPhotoAsync(chatId,
-                InputFile.FromStream(responseStream), caption: faceKey);
+                InputFile.FromStream(responseStream), caption: objectKey);
         }
-        
+    }
+
+    private async Task<List<string>> FindPhotoByFaceName(string name)
+    {
+        using var driver = new Driver(
+            config: _driverConfig
+        );
+
+        await driver.Initialize();
+
+        using var tableClient = new TableClient(driver, new TableClientConfig());
+
+        var response = await tableClient.SessionExec(async session =>
+        {
+            var query = @$"
+                    DECLARE $name AS Utf8;
+
+                    SELECT original_img FROM faces_table
+                    WHERE name = $name
+                ";
+
+            return await session.ExecuteDataQuery(
+                query: query,
+                txControl: TxControl.BeginSerializableRW().Commit(),
+                parameters: new Dictionary<string, YdbValue>
+                {
+                    { "$name", YdbValue.MakeUtf8(name) },
+                }
+            );
+        });
+
+        response.Status.EnsureSuccess();
+        var queryResponse = (ExecuteDataQueryResponse)response;
+        return queryResponse.Result.ResultSets[0].Rows.Select(r => (string)r["original_img"]).ToList();
     }
 
     private async Task<string> GetRandomFaceId()
     {
-        var connectionString = Environment.GetEnvironmentVariable("connectionString");
-        var database = Environment.GetEnvironmentVariable("database");
-        
-        var metadataProvider = new MetadataProvider();
-
-        // Await initial IAM token.
-        
-        await metadataProvider.Initialize();
-        
-        var config = new DriverConfig(
-            endpoint: connectionString!, // Database endpoint, "grpcs://host:port"
-            database: database!, // Full database path
-            credentials: metadataProvider
-        );
-
         using var driver = new Driver(
-            config: config
+            config: _driverConfig
         );
 
         await driver.Initialize();
-        
+
         using var tableClient = new TableClient(driver, new TableClientConfig());
-        
+
         var response = await tableClient.SessionExec(async session =>
         {
             var query = @$"
@@ -158,32 +209,17 @@ public class Handler
         var queryResponse = (ExecuteDataQueryResponse)response;
         return queryResponse.Result.ResultSets[0].Rows.First()["id"].GetUtf8();
     }
-    
+
     private async Task SetFaceName(string faceId, string name)
     {
-        var connectionString = Environment.GetEnvironmentVariable("connectionString");
-        var database = Environment.GetEnvironmentVariable("database");
-        
-        var metadataProvider = new MetadataProvider();
-
-        // Await initial IAM token.
-        
-        await metadataProvider.Initialize();
-        
-        var config = new DriverConfig(
-            endpoint: connectionString!, // Database endpoint, "grpcs://host:port"
-            database: database!, // Full database path
-            credentials: metadataProvider
-        );
-
         using var driver = new Driver(
-            config: config
+            config: _driverConfig
         );
 
         await driver.Initialize();
-        
+
         using var tableClient = new TableClient(driver, new TableClientConfig());
-        
+
         var response = await tableClient.SessionExec(async session =>
         {
             var query = @$"
@@ -206,5 +242,14 @@ public class Handler
         });
 
         response.Status.EnsureSuccess();
+    }
+
+    private string GetObjectUrl(string objectKey, string type)
+    {
+        return type switch
+        {
+            "vvot09-faces" => $"https://{_gatewayId}.apigw.yandexcloud.net/?face={objectKey}",
+            "vvot09-photo" => $"https://{_gatewayId}.apigw.yandexcloud.net/{objectKey}"
+        };
     }
 }

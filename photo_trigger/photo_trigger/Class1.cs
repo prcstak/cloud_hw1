@@ -25,7 +25,7 @@ public class CutTask
 public class Handler
 {
     private readonly Sdk _sdk =
-        new(new OAuthCredentialsProvider("y0_AgAAAABwYfFqAATuwQAAAADubwuME5d0zbOnQ3CxT3pw6Hc7feKYU3I"));
+        new(new OAuthCredentialsProvider(Environment.GetEnvironmentVariable("oauth")));
 
     public async Task FunctionHandler(string message)
     {
@@ -80,7 +80,7 @@ public class Handler
         var aiService = new Services_Ai_Vision(_sdk);
         var face = new BatchAnalyzeRequest()
         {
-            FolderId = "b1g8rqr6hk041qarcuvq",
+            FolderId = Environment.GetEnvironmentVariable("folderId"),
             AnalyzeSpecs =
             {
                 new AnalyzeSpec()
